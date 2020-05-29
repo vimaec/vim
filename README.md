@@ -1,5 +1,5 @@
 # VIM v1.0.0
-## Updated: May 28th, 2020
+## Updated: May 29th, 2020
 
 Copyright 2020 VIMaec LLC. [Full copyright notice here](https://www.vimaec.com/copyright)
 
@@ -25,7 +25,10 @@ This is the specification for version 1.0.0 of the VIM data format. It is divide
 
 ## About the Version 
 
-The VIM format version now uses a <major>.<minor>.<revision> naming scheme. Changes to the VIM major number indicate a breaking change that will prevent older VIM tools from loading that VIM file. Changes to the minor number indicate that significant new data is present or no longer expected in the format, but that older VIM tools should still continue to function. Change to the revision number, indicate a small update to the object model only, with no significant impact to older tools.
+The VIM format version uses the [Semantic Versioning](https://semver.org/) scheme: `MAJOR.MINOR.PATCH`.
+* A `MAJOR` number increment indicates a breaking change. Older VIM tools are not expected to be capable of loading VIM files whose `MAJOR` version has been incremented.
+* A `MINOR` number increment indicates a backwards-compatible change, for example: the addition of a new data field. Older VIM tools are expected to be capable of loading VIM files whose `MINOR` version has been incremented within the same `MAJOR` version.
+* A `PATCH` number increment indicates a backwards-compatible change which does not affect the schema of the data, for example: a bug fix. Older VIM tools are expected to be capable of loading VIM files whose `PATCH` version has been incremented within the same `MAJOR` and `MINOR` version.
 
 # 1. VIM Format Binary Specification
 
