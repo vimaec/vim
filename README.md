@@ -1,7 +1,7 @@
 # VIM v1.0.0
+## Updated: May 28th, 2020
 
-Author: VIMaec LLC
-Updated: May 28th, 2020
+Copyright 2020 VIMaec LLC. [Full copyright notice here](https://www.vimaec.com/copyright)
 
 # About VIM
 
