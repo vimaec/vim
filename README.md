@@ -1,4 +1,4 @@
-# VIM v0.10.0
+# VIM v1.0.0
 
 Author: VIMaec LLC
 Updated: May 28th, 2020
@@ -18,10 +18,14 @@ The VIM format was designed for efficient rendering on multiple platforms, and t
 
 # About this Specification 
 
-This is the specification for version 0.10 of the VIM data format. It is divided up into two parts: 
+This is the specification for version 1.0.0 of the VIM data format. It is divided up into two parts: 
 
 1. VIM Format Binary Specification 
 2. VIM Data Model Schema 
+
+## About the Version 
+
+The VIM format version now uses a <major>.<minor>.<revision> naming scheme. Changes to the VIM major number indicate a breaking change that will prevent older VIM tools from loading that VIM file. Changes to the minor number indicate that significant new data is present or no longer expected in the format, but that older VIM tools should still continue to function. Change to the revision number, indicate a small update to the object model only, with no significant impact to older tools.
 
 # 1. VIM Format Binary Specification
 
@@ -37,20 +41,25 @@ There are five expected top-level buffers in the VIM file with the following nam
 
 ## Header Buffer
 
-The header section contains the VIM file version and additional meta data as a JSON-encoded object where the values are only allowed to be strings. 
+The header section contains the VIM file version and additional meta data as a JSON-encoded object where the values are only allowed to be strings. String escaping is not allowed in keys or values. 
+
+The following is an example:
 
 ```
 {
   "vim" : "0.10.0",
-  "guid" : "03280421-595d-4a35-802e-83bb6739e7ae",
-  "version" : "1",
-  "generated" : "Vim.Revit.Exporter:v1.46:Revit2020",
+  "id" : "03280421-595d-4a35-802e-83bb6739e7ae",
+  "revision" : "f7eaf6b2-55b2-4f55-87f4-cdc9a01aa406",
+  "generator" : "Vim.Revit.Exporter:v1.46:Revit2020",
   "created" : "2020-05-20T16:31:19Z",
-  "author" : "Christopher Diggins"
 }
 ```
 
-The only required field is "vim" which has value in the format `<major>.<minor>.<patch>` representing the file format version. The key names are case insensitive. The `created` field, if present, should contain a date in ISO_8601 format.
+The field names are case insensitive. The only required field is `vim` which must have the value in the format `<major>.<minor>.<patch>` representing the file format version. 
+The `id` field should be a uniquely generated GUID created the first time a VIM is created, but is not changed when the file is modified or saved.  
+The `revision` field if present should be a new GUID created anytime a VIM is modified or updated.
+The `created` field, should contain a date in ISO_8601 format. 
+The `generator` field contains the name of the program used to generate or edit the VIM. 
 
 ## Assets Buffer
 
@@ -65,11 +74,13 @@ G3D attributes are arrays of data associated with different parts of the overall
 * face
 * corner
 * edge
-* group (i.e. face group)
+* group 
 * all
 * none
 * material
 * instance
+
+Group refers to "face group" and can be thought of as a sub-mesh. It is is a contiguous set of faces within the total vertex buffer. 
 
 G3D attributes have names to identify them (e.g. position or uv) and uses indices to distinguish when multiple attributes share the same name (e.g. uv:0 ... uv:8). 
 
@@ -94,7 +105,7 @@ The following attributes are optional:
 * `g3d:vertex:color:0:float32:3` - The UV buffer, which is a list of 2 single-precision floating point values per vertex 
 * `g3d:node:parent:0:uint32:1`- The index of a parent node 
 
-Additional attributes are possible, but are ignored, and may or may not be written out by a VIM processing application.
+Additional attributes are possible, but are ignored, and may or may not be written out by any tool that inputs and outputs VIM files.
 
 Each face group is assumed to use consecutive sequences of indices and vertices. This implies that each member of the `indexoffset` and `vertexoffset` attributes are greater than or equal to the previous, and that the first value is zero. It is possible that a face group has zero indices and zero vertices. 
 
@@ -110,9 +121,24 @@ For example a reference to a texture file `wood.png` would be found as a named b
 
 ## Entities Buffer
 
-The entities section of a VIM contains additional information in either a relational table, or collection of key-value pairs, about the the geometry, nodes, materials, cameras, assets, and BIM elements. 
+The entities section of a VIM contains a collection of entity tables. An entity table is a combination of a relational table alongside a collection of key-value pairs, about a particular data entity. Examples of data entities include: geometry, nodes, materials, cameras, assets, and various BIM elements such as Elements or Products. 
 
-###
+Each relational table consists of three types of columns: 
+
+1. numerical - in which each value is a double precision (64 bit) floating point value
+2. string - in which each value is an index into the string table, or a -1 to indicate no string
+3. relation - in which each value is an index into another entity table indicated by the column name, or a -1 to indicate no entity
+
+For more information on what they expected entities are and what columns they are expected to contain in this version of VIM see the VIM Data Model Section of the documentation. 
+
+The entities section is encoded as a BFAST with each buffer containing an entity table. Each entity table is also encoded as a BFAST with each column as a named buffer, and a collection of key/value pairs encoded in its own column. 
+
+## Strings Buffer
+
+The strings buffer contains a sequence of strings of zero or more length, delimited by the "NUL" character. The zero-based index of each string (typically the first one is the empty string) is used by keys and values in the key/value collections associated with entities, and the string columns of entity tables. 
+
+*Recommendation:* strings should be ordered alphabetically and should be unique.
 
 # VIM Object Model
 
+W.I.P.
