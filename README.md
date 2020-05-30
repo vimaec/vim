@@ -1,7 +1,9 @@
 # VIM v1.0.0
 ## Updated: May 29th, 2020
 
-Copyright 2020 VIMaec LLC. [Full copyright notice here](https://www.vimaec.com/copyright)
+Copyright 2020 VIMaec LLC. 
+
+[Full copyright notice here](https://www.vimaec.com/copyright)
 
 # About VIM
 
@@ -44,18 +46,16 @@ There are five expected top-level buffers in the VIM file with the following nam
 
 ## Header Buffer
 
-The header section contains the VIM file version and additional meta data as a JSON-encoded object where the values are only allowed to be strings. String escaping is not allowed in keys or values. 
+The header section contains the VIM file version and additional meta data as a sequence of newline (`\n`) terminated sets of key/value pairs denoted by `<key>=<value>`.
 
 The following is an example:
 
 ```
-{
-  "vim" : "0.10.0",
-  "id" : "03280421-595d-4a35-802e-83bb6739e7ae",
-  "revision" : "f7eaf6b2-55b2-4f55-87f4-cdc9a01aa406",
-  "generator" : "Vim.Revit.Exporter:v1.46:Revit2020",
-  "created" : "2020-05-20T16:31:19Z",
-}
+vim=0.10.0
+id=03280421-595d-4a35-802e-83bb6739e7ae
+revision=f7eaf6b2-55b2-4f55-87f4-cdc9a01aa406
+generator=Vim.Revit.Exporter:v1.46:Revit2020
+created=2020-05-20T16:31:19Z
 ```
 
 The field names are case insensitive. The only required field is `vim` which must have the value in the format `<major>.<minor>.<patch>` representing the file format version. 
@@ -93,20 +93,20 @@ The geometry in a VIM must contain the following attributes:
 
 * `g3d:vertex:position:0:float32:3` -	Position data arranged as 3 single precision floating point values per vertex
 * `g3d:corner:index:0:uint32:1` - The index buffer, which is a list of 32-bit integers 
-* `g3d:group:material:0:uint32:1` - The index of the material associated with a face group. 
 * `g3d:group:indexoffset:0:uint32:1` - The offset of the index buffer for a group. 
 * `g3d:group:vertexoffset:0:uint32:1` - The offset into the vertex buffer for a group
+* `g3d:node:group:0:uint32:1`- The index of the face group associated with a particular node
+* `g3d:node:transform:0:float64:16`- The transform of a node encoded as a 4x4 matrix in row major order
+
+The following attributes are optional, but if an attribute with the same `association:name` is present then the attribute must conform to the list below. 
+
+* `g3d:group:material:0:uint32:1` - The index of the material associated with a face group. 
+* `g3d:vertex:uv:0:float32:2` - The UV buffer, which is a list of 2 single-precision floating point values per vertex 
+* `g3d:vertex:normal:0:float32:3` - The vertex normal buffer 
+* `g3d:node:parent:0:uint32:1`- The index of a parent node 
+* `g3d:material:color:0:float32:4`- A RGBA color representing the diffuse color of a material
 * `g3d:material:name:0:string:1`- The name of each material 
 * `g3d:material:texture:0:string:1`- The name of each texture, as specified in the textures section of the assets.
-* `g3d:material:color:0:float32:4`- A RGBA color representing the diffuse color of a material
-* `g3d:node:group:0:uint32:1`- The index of the face group associated with a particular node
-* `g3d:node:position:0:float64:16`- The transform of a node encoded as a 4x4 matrix in row major order
-
-The following attributes are optional:
-
-* `g3d:vertex:uv:0:float32:2` - The UV buffer, which is a list of 2 single-precision floating point values per vertex 
-* `g3d:vertex:color:0:float32:3` - The UV buffer, which is a list of 2 single-precision floating point values per vertex 
-* `g3d:node:parent:0:uint32:1`- The index of a parent node 
 
 Additional attributes are possible, but are ignored, and may or may not be written out by any tool that inputs and outputs VIM files.
 
@@ -138,9 +138,7 @@ The entities section is encoded as a BFAST with each buffer containing an entity
 
 ## Strings Buffer
 
-The strings buffer contains a sequence of strings of zero or more length, delimited by the "NUL" character. The zero-based index of each string (typically the first one is the empty string) is used by keys and values in the key/value collections associated with entities, and the string columns of entity tables. 
-
-*Recommendation:* strings should be ordered alphabetically and should be unique.
+The strings buffer contains a sequence of ordered strings of zero or more length, with no duplicates, delimited by the "NUL" character. The zero-based index of each string (typically the first string is the empty string) is used by keys and values in the key/value collections associated with entities, and the string columns of entity tables. 
 
 # VIM Object Model
 
