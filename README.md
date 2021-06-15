@@ -117,7 +117,7 @@ Each attribute buffer is associated with a component of a geometry:
 * none
 
 G3D attributes have names to identify them (e.g. position or uv) and uses indices to distinguish when multiple attributes share the same name (e.g. uv:0 ... uv:8). 
-They can one of the following core data datatypes: float32, float64, int8, int16, int32, int64.
+They can be of one of the following core data datatypes: float32, float64, int8, int16, int32, int64.
 
 More information on G3D is available on its Github repo at [https://github.com/vimaec/g3d](https://github.com/vimaec/g3d).
 
