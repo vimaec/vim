@@ -72,6 +72,7 @@ but will not be parsed by most readers.
 * `entities`
 * `strings`
 * `geometry`
+* `nodes`
 
 ## Header Buffer
 
@@ -166,6 +167,42 @@ The entities section is encoded as a BFAST with each buffer containing an entity
 ## Strings Buffer
 
 The strings buffer contains a sequence of ordered strings of zero or more length, with no duplicates, delimited by the "NUL" character. The zero-based index of each string (typically the first string is the empty string) is used by keys and values in the key/value collections associated with entities, and the string columns of entity tables. 
+
+## Nodes Buffer
+
+An array of continguous byte representation of the following data stucture.
+
+```
+    /// <summary>
+    /// A node in the scene graph. Size = 76
+    /// TODO: this whole thing could probably be in an EntityTable
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
+    public struct SerializableSceneNode
+    {
+        public const int Size = (3 * 4) + (16 * 4);
+
+        /// <summary>
+        /// The parent node (or -1) if a root node. There should be only one root node. 
+        /// </summary>
+        public int Parent;
+
+        /// <summary>
+        /// The index of the associated geometry. 
+        /// </summary>
+        public int Geometry;
+
+        /// <summary>
+        /// If this node is an instance of another node, this is that index 
+        /// TODO: this needs to be blown away. It is too complicated for things to work properly.
+        /// </summary>
+        public int Instance;
+
+        /// <summary>
+        /// 16 floating points numbers representing a 4z4 matrix which is the global space location
+        /// </summary>
+        public Matrix4x4 Transform;
+```
 
 # VIM Object Model
 
