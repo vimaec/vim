@@ -129,7 +129,7 @@ The geometry in a VIM must contain the following attributes:
 * `g3d:subgeometry:indexoffset:0:int32:1` - The offset of the index buffer for a group. 
 * `g3d:subgeometry:vertexoffset:0:int32:1` - The offset into the vertex buffer for a group
 * `g3d:instance:subgeometry:0:int32:1`- The index of the subgeometry associated with a particular instance
-* `g3d:instance:transform:0:float64:16`- The transform of a node encoded as a 4x4 matrix in row major order
+* `g3d:instance:transform:0:float32:16`- The transform of a node encoded as a 4x4 matrix in row major order
 * `g3d:face:material:0:int32:1` - The index of the material associated with the face. 
 * `g3d:face:group:0:int32:1` - The index of the group associated with a face. 
 * `g3d:vertex:uv:0:float32:2` - The UV buffer, which is a list of 2 single-precision floating point values per vertex 
