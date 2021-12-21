@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VIMReference": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\VIMs\\skanska-unzip.vim\""
+    }
+  }
+}
