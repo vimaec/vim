@@ -4,12 +4,12 @@ The VIM format is a modern and efficient open 3D data interchange format designe
 
 Characteristics of the VIM format:
 
-* Minimal overhead for loading into GPU memory with
+* Minimal memory and parsing overhead required before loading into GPU memory 
 * Contains instancing information
 * Represents structured relational data (e.g. BIM data) efficiently
-* Deduplicates string data
+* Deduplicated string data
 * Can contain arbitrary nested sturctures (e.g. assets)
-
+* Extensible object format and geometry format
 
 <!--
 Unlike other 3D data formats, VIM is designed to carry extremely large amounts of complex relational data in an efficient and standardized manner. 
@@ -28,8 +28,6 @@ present in real-world construction projects. As a result the format minimizes th
 * Unlike glTF, VIM is an opinionated format, that has fixed access patterns for data buffers, and can be extended in very precise ways to simplify parsing.
 * Unlike FBX, VIM is easy to extend with new buffers. 
 * Unlike glTF and FBX, VIM is not designed to specify animated assets  
-
-
 -->
 
 # About this Specification 
@@ -38,12 +36,14 @@ This is the specification for version 1.0.0 of the VIM data format. It is divide
 
 1. VIM Format Binary Specification 
 2. VIM Versioning
-3. VIM Data Model Schema 
+3. VIM Object Model Schema 
+4. Extending VIM
+5. FAQ
 
 # 1. VIM Format Binary Specification
 
 At the top-level a VIM document conforms to the [BFAST (Binary Format for Array Serialization and Transmission) binary data format](https://github.com/vimaec/bfast). 
-A BFAST is conceptually similar to a ZIP or TAR archive without compression, an array of named data-buffers. Physically it is laid out as a header, an array of range structures (each containing offsets to the begin and end of a buffer), and then the data section. The following structures assume 64 bit or smaller alignment. 
+A BFAST is conceptually similar to a ZIP or TAR archive without compression, just an array of named data-buffers. Physically it is laid out as a header, an array of range structures (each containing offsets to the begin and end of a buffer), and then the data section. The following structures assume 64 bit or smaller alignment. 
 
 ## Header
 
@@ -169,6 +169,8 @@ The values of the index buffer are not offset: they are relative to the beginnin
 
 ## Entities Buffer
 
+Columns and tables in the entity buffer should never be assumed to present by an application consuming a VIM.  
+
 The entities section of a VIM contains a collection of entity tables. An entity table is a combination of a relational table alongside a collection of key-value pairs, about a particular data entity. Examples of data entities include: geometry, nodes, materials, cameras, assets, and various BIM elements such as Elements or Products. 
 
 Each relational table consists of three types of columns: 
@@ -201,13 +203,28 @@ The VIM format version uses the [Semantic Versioning](https://semver.org/) schem
 
 Similarly the object model has its own semantic versioning scheme. 
 
-# 3. VIM Object Model
+# 3. VIM Object Model Schema
 
 The object model refers to the schema of entity tables. This constitutes the name of each table, the name and type of each column in each table, and the relationship between tables (as specified by index columns).
 
-The VIM file format is independent of the object model, 
+The VIM file format is independent of the object model.
 
-# 4. FAQ 
+The current object model is documented here as a C# file: https://github.com/vimaec/vim/blob/master/object-model-v4.0.0.cs. 
+
+The C# file describe the table as a set of objects. Compound types, for example say a field named `Location` of type `Vector3`, is represented as multiple columns in the table (e.g. `Location.X`, `Location.Y`, and `Location.Z`).
+
+The VIM C# API allows users to efficiently access data as tables and columns (as they are represented in memory and on-disk), or more conveniently as dynamically
+created objects as expressed in the C# object model file. 
+
+# 4. Extending and Modifying VIM
+
+The VIM format allows for additional geometry attribute buffers, beyond the minimum required. Tools should be able to read and write additional buffers, even if there is no deeper understanding of the buffer.
+
+Software loading VIM files should be robust in the absence of tables and columns, never assuming any table or column is present. 
+
+Additional tables and columns can be added as desired, and all software supporting VIM files should be able to read and write that data without loss. 
+
+# 5. FAQ 
 
 1. Why 64 Byte Alignment 
     * Many Intel and AMD processors have 64 byte L1 cache lines. When data is aligned on cache lines it can benefit performance.
