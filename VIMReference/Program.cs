@@ -1,4 +1,5 @@
-﻿Console.WriteLine($"Welcome to the BFAST reference application");
+﻿Console.WriteLine($"Welcome to the VIM Reference application");
+Console.WriteLine($"This application demonstrates how to parse a VIM file");
 
 Console.WriteLine($"There are {args.Length} command-line arguments, expecting at least 1, a file-name");
 
@@ -15,7 +16,7 @@ var magic = reader.ReadUInt64();
 Console.WriteLine($"Read magic number = {magic}, expecting {0xBFA5}");
 
 var dataStart = reader.ReadUInt64();
-Console.WriteLine($"Read data start = {dataStart}, expecting <= {fileInfo.Length}, and >= 64 + 16 * # arrays, and divisible by 64 ({dataStart % 64} == 0)");
+Console.WriteLine($"Read data start = {dataStart}, expecting <= {fileInfo.Length}, and >= 64 + 16 * # arrays, and divisible by 64    ({dataStart % 64} == 0)");
 
 var dataEnd = reader.ReadUInt64();
 Console.WriteLine($"Read data end = {dataEnd}, expecting <= fileLength and >= {dataStart}");
@@ -49,5 +50,32 @@ Console.WriteLine($"Found {names.Length} buffer names, expected {numArrays-1}");
 
 for (var i = 0ul; i < numArrays - 1; i++)
     Console.WriteLine($"Buffer {i} = {names[i]}");
+
+Console.WriteLine("Creating lookup of names to ranges");
+var nameToRange = names.Zip(ranges.Skip(1)).ToDictionary(tuple => tuple.First, tuple => tuple.Second);
+
+var hasHeader = nameToRange.TryGetValue("header", out var headerRange);
+Console.WriteLine($"Has header = {hasHeader}");
+
+var hasAssets = nameToRange.TryGetValue("assets", out var assetsRange);
+Console.WriteLine($"Has assets = {hasAssets}");
+
+var hasGeometry = nameToRange.TryGetValue("geometry", out var geometryRange);
+Console.WriteLine($"Has geometry = {hasGeometry}");
+
+var hasStrings = nameToRange.TryGetValue("strings", out var stringsRange);
+Console.WriteLine($"Has assets = {hasStrings}");
+
+var hasEntities = nameToRange.TryGetValue("entities", out var entitiesRange);
+Console.WriteLine($"Has assets = {hasEntities}");
+
+if (hasHeader)
+{
+    var headerByteCount = headerRange.End - headerRange.Begin;
+    var headerBytes = reader.ReadBytes((int)headerByteCount);
+    var header = System.Text.Encoding.UTF8.GetString(headerBytes);
+    Console.WriteLine("Header Contents:");
+    Console.WriteLine(header);
+}
 
 Console.ReadKey();

@@ -1,13 +1,18 @@
 # VIM v1.0.0
-## Updated: August 8th, 2020
 
-This documentation is Copyright 2020 VIMaec LLC. 
-[Full copyright notice here](https://www.vimaec.com/copyright)
+The VIM format is a modern and efficient open 3D data interchange format designed for BIM and manufacturing data, that is optimized for efficient loading and rendering on low-power devices.
 
-# About VIM
+Characteristics of the VIM format:
 
-VIM is a modern and efficient open 3D data interchange format designed for construction and manufacturing data, that is optimized for efficient rendering on 
-low-power devices. Unlike other 3D data formats, VIM is designed to carry extremely large amounts of complex relational data in an efficient and standardized manner. 
+* Minimal overhead for loading into GPU memory with
+* Contains instancing information
+* Represents structured relational data (e.g. BIM data) efficiently
+* Deduplicates string data
+* Can contain arbitrary nested sturctures (e.g. assets)
+
+
+<!--
+Unlike other 3D data formats, VIM is designed to carry extremely large amounts of complex relational data in an efficient and standardized manner. 
 
 ## Format Design Goals
 
@@ -24,43 +29,64 @@ present in real-world construction projects. As a result the format minimizes th
 * Unlike FBX, VIM is easy to extend with new buffers. 
 * Unlike glTF and FBX, VIM is not designed to specify animated assets  
 
+
+-->
+
 # About this Specification 
 
-This is the specification for version 1.0.0 of the VIM data format. It is divided up into two parts: 
+This is the specification for version 1.0.0 of the VIM data format. It is divided up into the following parts: 
 
 1. VIM Format Binary Specification 
-2. VIM Data Model Schema 
-
-## About the Version 
-
-The VIM format version uses the [Semantic Versioning](https://semver.org/) scheme: `MAJOR.MINOR.PATCH`.
-* A `MAJOR` number increment indicates a breaking change. Older VIM tools are not expected to be capable of loading VIM files whose `MAJOR` version has been incremented.
-* A `MINOR` number increment indicates a backwards-compatible change, for example: the addition of a new data field. Older VIM tools are expected to be capable of loading VIM files whose `MINOR` version has been incremented within the same `MAJOR` version.
-* A `PATCH` number increment indicates a backwards-compatible change which does not affect the schema of the data, for example: a bug fix. Older VIM tools are expected to be capable of loading VIM files whose `PATCH` version has been incremented within the same `MAJOR` and `MINOR` version.
+2. VIM Versioning
+3. VIM Data Model Schema 
 
 # 1. VIM Format Binary Specification
 
 At the top-level a VIM document conforms to the [BFAST (Binary Format for Array Serialization and Transmission) binary data format](https://github.com/vimaec/bfast). 
-A BFAST is similar to a ZIP or TAR archive without compression. 
+A BFAST is conceptually similar to a ZIP or TAR archive without compression, an array of named data-buffers. Physically it is laid out as a header, an array of range structures (each containing offsets to the begin and end of a buffer), and then the data section. The following structures assume 64 bit or smaller alignment. 
 
-## About BFAST 
+## Header
 
-The [BFAST data format](https://github.com/vimaec/bfast) is a useful and simple general purpose format for transporting named arrays of binary data between different 
-languages and platforms.
+The first structure in the VIM file (or any BFAST) is a 32 byte header.
 
-Some properties of the BFAST format:
-* 64 byte aligned data buffers 
-* Data access table in the header 
-* Support for big and little endian encoding
-* Magic number to quickly identify BFAST format and endianess
-* Support for data buffers larger than 2GB 
+```
+// 32 Bytes 
+struct Header 
+{
+    uint64_t Magic;         // 0xBFA5
+    uint64_t DataStart;     // <= File size and >= 32 + Sizeof(Range) * NumArrays 
+    uint64_t DataEnd;       // >= DataStart and <= file size
+    uint64_t NumArrays;     // Number of all buffers, including names buffer
+}
+```
 
-Some sample use cases: 
-* files and folders 
-* 2D images
-* 2D movies  
-* 3D meshes (see [G3D format](https://github.com/vimaec/g3d))
-* 3D point clouds
+After the header is 32 bytes of padding.
+
+## Buffer Ranges 
+
+At byte number 64 starts an array of N range struct (where N = NumArrays in the Header). 
+Each range struct specifies where the data begins and ends for a particular buffer, as an offset from the beginning of the file.
+
+```
+// 16 bytes 
+struct Range
+{
+    uint64_t Begin;
+    uint64_t End;
+}	
+```	
+
+The data section starts at the first 64 byte aligned address immediately following the last Range value.
+
+The range structs are expected to satify the following criteria:
+* to be ordered by the Begin value
+* to represent non-overlapping buffers (the begin of the following buffer is strictly greater than the end of the preceding buffer)
+* each buffer begins at a 64 byte aligned address
+* there are no more more than 64 bytes of padding between each buffer. 
+
+## Names Buffer
+
+The first data buffer in a VIM file, contains the names of the others buffers as NUL character delimited UTF-8 encoded strings. The number of strings should always be equals to the number of data buffers specified in the header minus one.
 
 ## VIM Data Buffers
 
@@ -95,7 +121,7 @@ The `generator` field contains the name of the program used to generate or edit 
 
 ## Assets Buffer
 
-The assets section of a BIM is also a BFAST container. It may contain any number of buffers with any names. Buffers prefixed with the name `textures\` are assumed to be texture files.   
+The assets section of a BIM is also a BFAST container. It may contain any number of buffers with any names. Buffers prefixed with the name `textures\` are assumed to be texture files. By convention buffers prefixed with the name `renders\` contain image files.
 
 ## Geometry Buffer
 
@@ -141,23 +167,21 @@ Each face group is assumed to use consecutive sequences of indices and vertices.
 
 The values of the index buffer are not offset: they are relative to the beginning of the vertex buffer. 
 
-*Recommendation:* It is good practice to offset the geometries so that their origin is either at the center of all points, or at the bottom center of all the points. 
-
-### Note About Textures
-
-An application may or may not be able to render a given texture type. Any referenced texture file is presumed to be contained as a buffer in the assets section with the prefix `textures\`. 
-
-For example a reference to a texture file `wood.png` would be found as a named buffer in the assets section as `textures\wood.png`. 
-
 ## Entities Buffer
 
 The entities section of a VIM contains a collection of entity tables. An entity table is a combination of a relational table alongside a collection of key-value pairs, about a particular data entity. Examples of data entities include: geometry, nodes, materials, cameras, assets, and various BIM elements such as Elements or Products. 
 
 Each relational table consists of three types of columns: 
 
-1. numerical - in which each value is a double precision (64 bit) floating point value
-2. string - in which each value is an index into the string table, or a -1 to indicate no string
-3. relation - in which each value is an index into another entity table indicated by the column name, or a -1 to indicate no entity
+* **numerical** - in which each value is a numerical value of one of the following numerical types: 
+  * `byte` (8-bit)
+  * `short` (16-bit)
+  * `int` (32-bit)
+  * `long` (64-bit)
+  * `float` (32-bit floating point)
+  * `double` (64-bit floating point)
+* **string** - in which each value is a 32 bit integer index into the string table, or a -1 to indicate no string
+* **relation** - in which each value is a 32 bit index into another entity table indicated by the column name, or a -1 to indicate no entity
 
 For more information on what they expected entities are and what columns they are expected to contain in this version of VIM see the VIM Data Model Section of the documentation. 
 
@@ -165,8 +189,33 @@ The entities section is encoded as a BFAST with each buffer containing an entity
 
 ## Strings Buffer
 
-The strings buffer contains a sequence of ordered strings of zero or more length, with no duplicates, delimited by the "NUL" character. The zero-based index of each string (typically the first string is the empty string) is used by keys and values in the key/value collections associated with entities, and the string columns of entity tables. 
+The strings buffer contains a sequence of strings of zero or more length, with no duplicates, delimited by the "NUL" character. There may or may not be a trailing "NUL" character. The zero-based index of each string is used by the string columns of entity tables. 
 
-# VIM Object Model
+# 2. VIM Version 
 
-W.I.P.
+The VIM format version uses the [Semantic Versioning](https://semver.org/) scheme: `MAJOR.MINOR.PATCH`.
+
+* A `MAJOR` number increment indicates a breaking change. Older VIM tools are not expected to be capable of loading VIM files whose `MAJOR` version has been incremented.
+* A `MINOR` number increment indicates a backwards-compatible change, for example: the addition of a new data field. Older VIM tools are expected to be capable of loading VIM files whose `MINOR` version has been incremented within the same `MAJOR` version.
+* A `PATCH` number increment indicates a backwards-compatible change which does not affect the schema of the data, for example: a bug fix. Older VIM tools are expected to be capable of loading VIM files whose `PATCH` version has been incremented within the same `MAJOR` and `MINOR` version.
+
+Similarly the object model has its own semantic versioning scheme. 
+
+# 3. VIM Object Model
+
+The object model refers to the schema of entity tables. This constitutes the name of each table, the name and type of each column in each table, and the relationship between tables (as specified by index columns).
+
+The VIM file format is independent of the object model, 
+
+# 4. FAQ 
+
+1. Why 64 Byte Alignment 
+    * Many Intel and AMD processors have 64 byte L1 cache lines. When data is aligned on cache lines it can benefit performance.
+1. Why do all structures 64 bit unsigned integers, when it is not always necessary
+    * Simplifies parsing and validation, while keeping things future proof.
+1. Why isn't a VIM compressed?
+    * In HTTP server/client scenarios the web-client (e.g. a browser) will automatically decompress content that is comrpressed (e.g. using gzip) and served with the appropriate content encoding header. This decompression is optimized and happens in native code, and as a result is faster and simpler than requiring the client code to decompress content.
+
+# Copyright
+
+This documentation is [Copyright 2020 VIMaec LLC.](https://www.vimaec.com/copyright).
