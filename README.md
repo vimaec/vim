@@ -25,7 +25,7 @@ Unlike other 3D data formats, VIM is designed to carry extremely large amounts o
 
 # Sample Implementation
 
-A sample validating VIM reader can be found at: `https://github.com/vimaec/vim/blob/master/VIMReference/Program.cs`.
+A sample validating VIM reader can be found at: https://github.com/vimaec/vim/blob/master/VIMReference/Program.cs.
 
 # About this Specification 
 
