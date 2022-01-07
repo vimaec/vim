@@ -1,0 +1,23 @@
+.vs/
+bin/
+obj/
+*.user
+
+# Ignore the root-level nuget packages.
+/packages/
+src/Vim.Unity/build/
+
+# Ignore local launch settings
+launchSettings.json
+
+# Microsoft Azure Build Output
+csx/
+*.build.csdef
+
+# Microsoft Azure Emulator
+ecf/
+rcf/
+src/Vim.Unity/projects/Vim.API.URP/Assets/Resources/
+MigrationBackup/
+src/Vim.Unity/build2/
+src/Vim.Fbx/Vim.Fbx.DotNet/x64/
