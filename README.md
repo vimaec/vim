@@ -11,16 +11,9 @@ Characteristics of the VIM format:
 * Can contain arbitrary nested sturctures (e.g. assets)
 * Extensible object format and geometry format
 
+Unlike other 3D data formats, VIM is designed to carry extremely large amounts of complex relational data, and instanced geometry, in an efficient and standardized manner with minimal pre-processing. 
+
 <!--
-Unlike other 3D data formats, VIM is designed to carry extremely large amounts of complex relational data in an efficient and standardized manner. 
-
-## Format Design Goals
-
-The VIM format was originally designed for efficient rendering on multiple platforms using different languages and to transmit large amounts of BIM data 
-present in real-world construction projects. As a result the format minimizes the processing needed before being able to hand the geometry data to a GPU for efficient rendering. 
-
-### Comparison to Other Formats 
-
 * Unlike Revit and FBX, VIM is an open and cross platform format and does not require an SDK to read or write
 * Unlike IFC and STEP, VIM geometry is already triangulated and is in a GPU-friendly format
 * Unlike glTF and USD, VIM supports structured BIM data in a compact relational form
@@ -29,6 +22,10 @@ present in real-world construction projects. As a result the format minimizes th
 * Unlike FBX, VIM is easy to extend with new buffers. 
 * Unlike glTF and FBX, VIM is not designed to specify animated assets  
 -->
+
+# Sample Implementation
+
+A sample validating VIM reader can be found at: `https://github.com/vimaec/vim/blob/master/VIMReference/Program.cs`.
 
 # About this Specification 
 
