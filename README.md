@@ -134,7 +134,8 @@ Each attribute buffer is associated with a component of a geometry:
 * face
 * corner
 * edge
-* subgeometry 
+* mesh
+* submesh
 * instance
 * all
 * none
@@ -148,15 +149,13 @@ More information on G3D is available on its Github repo at [https://github.com/v
 The geometry in a VIM must contain the following attributes:
 
 * `g3d:vertex:position:0:float32:3` - Position data arranged as 3 single precision floating point values per vertex
-* `g3d:corner:index:0:int32:1` - The index buffer, which is a list of 32-bit integers 
-* `g3d:subgeometry:indexoffset:0:int32:1` - The offset of the index buffer for a group. 
-* `g3d:subgeometry:vertexoffset:0:int32:1` - The offset into the vertex buffer for a group
-* `g3d:instance:subgeometry:0:int32:1`- The index of the subgeometry associated with a particular instance
+* `g3d:corner:index:0:int32:1` - The index buffer, which is a list of 32-bit integers
+* `g3d:instance:mesh:0:int32:1`- The index of the mesh associated with a particular instance
 * `g3d:instance:transform:0:float32:16`- The transform of a node encoded as a 4x4 matrix in row major order
-* `g3d:face:material:0:int32:1` - The index of the material associated with the face. 
-* `g3d:face:group:0:int32:1` - The index of the group associated with a face. 
-* `g3d:vertex:uv:0:float32:2` - The UV buffer, which is a list of 2 single-precision floating point values per vertex 
-* `g3d:instance:parent:0:uint32:1`- The index of a parent node 
+* `g3d:mesh:submeshoffset:0:int32:1` - The index of the first submesh associated with a particular mesh 
+* `g3d:submesh:indexoffset:0:int32:1` - The index of the first index associated with a particular submesh
+* `g3d:submesh:material:0:int32:1` - The index of the material associated with a particular submesh
+* `g3d:material:color:0:float32:4` - Color data arranged as 4 single precision floatint point values per color. (RGBA)
 
 Additional attributes are possible, but are ignored, and may or may not be written out by any tool that inputs and outputs VIM files.
 
