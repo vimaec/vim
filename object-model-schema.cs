@@ -2,10 +2,8 @@ namespace Vim.ObjectModel
 {
     public static class ObjectModelVersion
     {
-        public static readonly SerializableVersion Current = SerializableVersion.Parse("4.0.0");
+        public static readonly SerializableVersion Current = SerializableVersion.Parse("4.1.0");
     }
-
-    public class ElementIsOptionalAttribute : Attribute { }
 
     public partial class Entity
     {
@@ -60,6 +58,7 @@ namespace Vim.ObjectModel
         /// <summary>
         /// A pipe-separated "NativeValue|DisplayValue" string.<br/>
         /// Pipe "|" or backslash "\" characters contained inside the NativeValue or DisplayValue parts are escaped with the backslash "\" character.
+        /// If the value is not pipe-separated, it is both the NativeValue and the DisplayValue.
         /// </summary>
         public string Value;
         public Relation<ParameterDescriptor> _ParameterDescriptor;
@@ -186,6 +185,7 @@ namespace Vim.ObjectModel
         public string User;
         public Relation<View> _ActiveView;
         public Relation<Family> _OwnerFamily;
+        public Relation<BimDocument> _Parent;
     }
 
     /// <summary>
@@ -297,9 +297,6 @@ namespace Vim.ObjectModel
     public partial class ElementInView : EntityWithElement, IStorageKey
     {
         public Relation<View> _View;
-
-        public int GetStorageKey()
-            => (_Element?.Index ?? -1, _View?.Index ?? -1).GetHashCode();
     }
 
     /// <summary>
@@ -368,7 +365,6 @@ namespace Vim.ObjectModel
         public double UpOffset;
     }
 
-    // TODO: VERY IMPORTANT this has to be fixed, a Material IS an entity (and has properties), so this should derive from EntityWithElement
     [TableName(TableNames.Material)]
     public partial class Material : EntityWithElement
     {
@@ -456,6 +452,20 @@ namespace Vim.ObjectModel
     [TableName(TableNames.CompoundStructure)]
     public partial class CompoundStructure : Entity
     {
+        /// <summary>
+        /// If the structure is not vertically compound, then this is simply the sum of all layers' widths.
+        /// If the structure is vertically compound, this is the width of the rectangular grid stored in the
+        /// vertically compound structure. The presence of a layer with variable width has no effect on the
+        /// value returned by this method. The value returned assumes that all layers have their specified
+        /// width.<br/>
+        /// See: <see href="https://www.revitapidocs.com/2020/dc1a081e-8dab-565f-145d-a429098d353c.htm">Revit API Docs - CompoundStructure.GetWidth()</see>.
+        /// </summary>
+        public double Width;
+        /// <summary>
+        /// Indicates the layer whose material defines the structural properties of the type for the purposes of analysis.<br/>
+        /// See: <see href="https://www.revitapidocs.com/2020/cf4d771e-6ed2-ec6a-d32d-647fb5b649b3.htm">Revit API Docs - CompoundStructure.StructuralMaterialIndex</see>.
+        /// </summary>
+        public Relation<CompoundStructureLayer> _StructuralLayer;
     }
 
     [TableName(TableNames.Node)]
@@ -472,8 +482,32 @@ namespace Vim.ObjectModel
         public int FaceCount;
     }
 
+    /// <summary>
+    /// Shape entities represent the shapes defined in the g3d.
+    /// A shape is a sequence of Vector3 points in world space.
+    /// </summary>
     [TableName(TableNames.Shape)]
     public partial class Shape : EntityWithElement
     {
+    }
+
+    /// <summary>
+    /// ShapeCollection entities represent a collection of shapes associated with an Element.
+    /// Currently, these define the shapes representing the curve loops on a face on an element;
+    /// faces may have a number of curve loops which may designate the contour of the face and its holes.
+    /// </summary>
+    [TableName(TableNames.ShapeCollection)]
+    public partial class ShapeCollection : EntityWithElement
+    {
+    }
+
+    /// <summary>
+    /// ShapeInShapeCollection represents the optional association between a Shape and a ShapeCollection.
+    /// </summary>
+    [TableName(TableNames.ShapeInShapeCollection)]
+    public partial class ShapeInShapeCollection : Entity, IStorageKey
+    {
+        public Relation<Shape> _Shape;
+        public Relation<ShapeCollection> _ShapeCollection;
     }
 }

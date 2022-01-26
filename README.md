@@ -108,13 +108,15 @@ id=03280421-595d-4a35-802e-83bb6739e7ae
 revision=f7eaf6b2-55b2-4f55-87f4-cdc9a01aa406
 generator=Vim.Revit.Exporter:v1.46:Revit2020
 created=2020-05-20T16:31:19Z
+schema=4.1.0
 ```
 
 The field names are case insensitive. The only required field is `vim` which must have the value in the format `<major>.<minor>.<patch>` representing the file format version. 
 The `id` field should be a uniquely generated GUID created the first time a VIM is created, but is not changed when the file is modified or saved.  
 The `revision` field if present should be a new GUID created anytime a VIM is modified or updated.
 The `created` field, should contain a date in ISO_8601 format. 
-The `generator` field contains the name of the program used to generate or edit the VIM. 
+The `generator` field contains the name of the program used to generate or edit the VIM.
+The `schema` field contains the version of the object model schema.
 
 ## Assets Buffer
 
@@ -131,13 +133,11 @@ G3D is based on the BFAST binary layout, and uses a naming convention to identif
 
 Each attribute buffer is associated with a component of a geometry:
 * vertex
-* face
 * corner
-* edge
-* subgeometry 
+* submesh
+* mesh
 * instance
-* all
-* none
+* shape
 
 G3D attributes have names to identify them (e.g. position or uv) and uses indices to distinguish when multiple attributes share the same name (e.g. uv:0 ... uv:8). 
 They can be of one of the following core data datatypes: float32, float64, int8, int16, int32, int64.
@@ -145,24 +145,94 @@ They can be of one of the following core data datatypes: float32, float64, int8,
 More information on G3D is available on its Github repo at [https://github.com/vimaec/g3d](https://github.com/vimaec/g3d).
 
 ### VIM Geometry Attributes
-The geometry in a VIM must contain the following attributes:
 
-* `g3d:vertex:position:0:float32:3` - Position data arranged as 3 single precision floating point values per vertex
-* `g3d:corner:index:0:int32:1` - The index buffer, which is a list of 32-bit integers 
-* `g3d:subgeometry:indexoffset:0:int32:1` - The offset of the index buffer for a group. 
-* `g3d:subgeometry:vertexoffset:0:int32:1` - The offset into the vertex buffer for a group
-* `g3d:instance:subgeometry:0:int32:1`- The index of the subgeometry associated with a particular instance
-* `g3d:instance:transform:0:float32:16`- The transform of a node encoded as a 4x4 matrix in row major order
-* `g3d:face:material:0:int32:1` - The index of the material associated with the face. 
-* `g3d:face:group:0:int32:1` - The index of the group associated with a face. 
-* `g3d:vertex:uv:0:float32:2` - The UV buffer, which is a list of 2 single-precision floating point values per vertex 
-* `g3d:instance:parent:0:uint32:1`- The index of a parent node 
+The geometry in a VIM contains the following attributes:
+
+* `g3d:vertex:position:0:float32:3`
+
+  An array of 32-bit single-precision floating point values, arranged in slices of 3 to represent the (X, Y, Z) vertices of all the meshes in the VIM. We refer to this as the "vertex buffer".
+
+* `g3d:vertex:uv:0:float32:2`
+
+  (Optional) An array of 32-bit single-precision floating point values, arranged in slices of 2 to represent the (U,V) values associated with each vertex.
+
+* `g3d:corner:index:0:int32:1`
+
+  An array of 32-bit integers representing the combined index buffer of all the meshes in the VIM. The values in this index buffer are relative to the beginning of the vertex buffer. Meshes in a VIM are composed of triangular faces, whose corners are defined by 3 indices.
+
+* `g3d:submesh:indexoffset:0:int32:1`
+
+  An array of 32-bit integers representing the index offset of the index buffer of a given submesh.
+
+* `g3d:submesh:material:0:int32:1`
+
+  An array of 32-bit integers representing the index of the material associated with a given submesh.
+
+* `g3d:mesh:submeshoffset:0:int32:1`
+
+  An array of 32-bit integers representing the index offset of a submesh in a given mesh.
+
+* `g3d:material:color:0:float32:4`
+
+  An array of 32-bit single-precision floating point values in the domain [0.0f, 1.0f], arranged in slices of 4 to represent the (R, G, B, A) diffuse color of a given material.
+
+* `g3d:material:glossiness:0:float32:1`
+
+  An array of 32-bit single-precision floating point values in the domain [0.0f, 1.0f] representing the glossiness of a given material.
+
+* `g3d:material:smoothness:0:float32:1`
+
+  An array of 32-bit single-precision floating point values in the domain [0.0f, 1.0f] representing the smoothness of a given material.
+
+* `g3d:instance:transform:0:float32:16`
+
+  An array of 32-bit single-precision floating point values, arranged in slices of 16 to represent the 4x4 row-major transformation matrix associated with a given instance.
+
+* `g3d:instance:parent:0:int32:1`
+
+  An array of 32-bit integers representing the index of the parent instance associated with a given instance.
+
+* `g3d:instance:mesh:0:int32:1`
+
+  An array of 32-bit integers representing the index of a mesh associated with a given instance.
+
+* `g3d:shapevertex:position:0:float32:3`
+
+  (Optional) An array of 32-bit single-precision floating point values, arranged in slices of 3 to represent the (X, Y, Z) positions of all the world-space shapes in the VIM. We refer to this as the "shape vertex buffer"
+
+* `g3d:shape:vertexoffset:0:int32:1`
+
+  (Optional) An array of 32-bit integers representing the index offset of the vertices in a given shape.
+
+* `g3d:shape:color:0:float32:4`
+
+  (Optional) An array of 32-bit single-precision floating point values, arranged in slices of 4 to represent the (R, G, B, A) color of a given shape.
+
+* `g3d:shape:width:0:float32:1`
+
+  (Optional) An array of 32-bit single-precision floating point values representing the width of a given shape.
 
 Additional attributes are possible, but are ignored, and may or may not be written out by any tool that inputs and outputs VIM files.
 
-Each face group is assumed to use consecutive sequences of indices and vertices. This implies that each member of the `indexoffset` and `vertexoffset` attributes are greater than or equal to the previous, and that the first value is zero. It is possible that a face group has zero indices and zero vertices. 
+Conceptually, the geometric objects in a VIM file are related in the following manner:
 
-The values of the index buffer are not offset: they are relative to the beginning of the vertex buffer. 
+- **Instance**:
+  - Has a 4x4 row-major matrix representing its world-space transform.
+  - May have a parent **Instance**.
+  - May have a **Mesh**.
+- **Mesh**
+  - Is composed of 0 or more **Submesh**es.
+- **Submesh**
+  - Has a **Material**
+  - References a slice of values in the index buffer to define the geometry of its triangular faces in local space.
+- **Material**
+  - Has a glossiness value in the domain [0f, 1f].
+  - Has a smoothness value in the domain [0f, 1f].
+  - Has an RGBA diffuse color whose components are in the domain [0f, 1f].
+- **Shape**
+  - Has an RGBA color whose components are in the domain [0f, 1f].
+  - Has a width.
+  - References a slice of vertices in the shape vertex buffer to define the sequence of world-space vertices which compose its linear segments.
 
 ## Entities Buffer
 
@@ -206,7 +276,7 @@ The object model refers to the schema of entity tables. This constitutes the nam
 
 The VIM file format is independent of the object model.
 
-The current object model is documented here as a C# file: https://github.com/vimaec/vim/blob/master/object-model-v4.0.0.cs. 
+The current object model is documented here as a C# file: https://github.com/vimaec/vim/blob/master/object-model-schema.cs.
 
 The C# file describe the table as a set of objects. Compound types, for example say a field named `Location` of type `Vector3`, is represented as multiple columns in the table (e.g. `Location.X`, `Location.Y`, and `Location.Z`).
 
@@ -232,4 +302,4 @@ Additional tables and columns can be added as desired, and all software supporti
 
 # Copyright
 
-This documentation is [Copyright 2020 VIMaec LLC.](https://www.vimaec.com/copyright).
+This documentation is [Copyright 2022 VIMaec LLC.](https://www.vimaec.com/copyright).
