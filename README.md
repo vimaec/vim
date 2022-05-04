@@ -188,6 +188,10 @@ The geometry in a VIM contains the following attributes:
 
   An array of 32-bit single-precision floating point values, arranged in slices of 16 to represent the 4x4 row-major transformation matrix associated with a given instance.
 
+* `g3d:instance:flags:0:uint16:1`
+
+  An array of 16-bit unsigned integers representing the flags of a given instance. The first bit of each flag designates whether the instance should be initially hidden (1) or not (0) when rendered.
+
 * `g3d:instance:parent:0:int32:1`
 
   An array of 32-bit integers representing the index of the parent instance associated with a given instance.
@@ -218,6 +222,7 @@ Conceptually, the geometric objects in a VIM file are related in the following m
 
 - **Instance**:
   - Has a 4x4 row-major matrix representing its world-space transform.
+  - Has a set of **Flag**s.
   - May have a parent **Instance**.
   - May have a **Mesh**.
 - **Mesh**
@@ -295,8 +300,6 @@ Additional tables and columns can be added as desired, and all software supporti
 
 1. Why 64 Byte Alignment 
     * Many Intel and AMD processors have 64 byte L1 cache lines. When data is aligned on cache lines it can benefit performance.
-1. Why do all structures 64 bit unsigned integers, when it is not always necessary
-    * Simplifies parsing and validation, while keeping things future proof.
 1. Why isn't a VIM compressed?
     * In HTTP server/client scenarios the web-client (e.g. a browser) will automatically decompress content that is comrpressed (e.g. using gzip) and served with the appropriate content encoding header. This decompression is optimized and happens in native code, and as a result is faster and simpler than requiring the client code to decompress content.
 
