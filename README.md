@@ -113,7 +113,7 @@ The `generator` field contains the name of the program used to generate or edit 
 The `schema` field contains the version of the object model schema.
 
 ## Assets Buffer
-The assets section of a BIM is also a BFAST container. It may contain any number of buffers with any names. Buffers prefixed with the name `textures\` are assumed to be texture files. By convention buffers prefixed with the name `renders\` contain image files.
+The assets section of a BIM is also a BFAST container. It may contain any number of buffers with any names. Buffers prefixed with the name `texture/` are assumed to be texture files. By convention buffers prefixed with the name `render/` contain image files.
 
 ## Geometry Buffer
 The geometry section of a VIM contains the merged geometry and basic scene graph information for an entire VIM document using the [G3D format](https://github.com/vimaec/g3d).
