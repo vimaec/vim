@@ -189,8 +189,7 @@ The geometry in a VIM contains the following attributes:
   (Optional) An array of 32-bit single-precision floating point values, arranged in slices of 4 to represent the (R, G, B, A) color of a given shape.
 
 * `g3d:shape:width:0:float32:1`
-
-(Optional) An array of 32-bit single-precision floating-point values represents a given shape's width.
+  (Optional) An array of 32-bit single-precision floating-point values represents a given shape's width.
 
 Additional attributes are possible but are ignored and may or may not be written out by any tool that inputs and outputs VIM files.
 
