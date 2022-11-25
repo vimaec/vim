@@ -245,6 +245,24 @@ The evolution of the object model schema [is documented here in JSON](./ObjectMo
 - This file summarizes the difference between schema versions using a flat representation of the entity table columns, prefixed by their entity table name, in the form: `(TABLE_NAME)__(COLUMN_NAME)`.
 - For example, in the schema update from v4.3.0 to v4.4.0, the entry `Vim.Element__byte:IsPinned` indicates that the entity table `Vim.Element` now contains the column `byte:IsPinned`.
 
+**Important invariant**: the number of rows in the following entity tables must be equal to the number of items items in their corresponding VIM geometry attributes to ensure referential integrity between rendered geometry and its associated entity table data.
+
+```
+rowCount(Vim.Node) == itemCount(g3d:instance:transform:0:float32:16)
+rowCount(Vim.Node) == itemCount(g3d:instance:flags:0:uint16:1)
+rowCount(Vim.Node) == itemCount(g3d:instance:parent:0:int32:1)
+rowCount(Vim.Node) == itemCount(g3d:instance:mesh:0:int32:1)
+
+rowCount(Vim.Material) == itemCount(g3d:material:color:0:float32:4)
+rowCount(Vim.Material) == itemCount(g3d:material:glossiness:0:float32:1)
+rowCount(Vim.Material) == itemCount(g3d:material:smoothness:0:float32:1)
+
+rowCount(Vim.Shape) == itemCount(g3d:shape:vertexoffset:0:int32:1)
+rowCount(Vim.Shape) == itemCount(g3d:shape:color:0:float32:4)
+rowCount(Vim.Shape) == itemCount(g3d:shape:width:0:float32:1)
+```
+
+
 ## Strings Buffer
 The strings buffer contains a sequence of strings of zero or more length, with no duplicates, delimited by the "NUL" character. There may or may not be a trailing "NUL" character. The zero-based index of each string is used by the string columns of entity tables.
 
