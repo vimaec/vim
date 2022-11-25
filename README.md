@@ -171,7 +171,7 @@ The geometry in a VIM contains the following attributes:
   An array of 32-bit single-precision floating point values, arranged in slices of 16 to represent the 4x4 row-major transformation matrix associated with a given instance.
 
 * `g3d:instance:flags:0:uint16:1`
-  An array of 16-bit unsigned integers representing the flags of a given instance. The first bit of each flag designates whether the instance should be initially hidden (1) or not (0) when rendered.
+  (Optional) An array of 16-bit unsigned integers representing the flags of a given instance. The first bit of each flag designates whether the instance should be initially hidden (1) or not (0) when rendered.
 
 * `g3d:instance:parent:0:int32:1`
   An array of 32-bit integers representing the index of the parent instance associated with a given instance.
