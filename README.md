@@ -118,7 +118,7 @@ The assets section of a BIM is also a BFAST container. It may contain any number
 ## Geometry Buffer
 The geometry section of a VIM contains the merged geometry and basic scene graph information for an entire VIM document using the [G3D format](https://github.com/vimaec/g3d).
 
-## About G3D
+### About G3D
 The [G3D format](https://github.com/vimaec/g3d) is a binary format for 3D geometry that encodes data in an array of attribute buffers. 
 
 G3D is based on the BFAST binary layout and uses a naming convention to identify the layout of each attribute buffer and how it is used.
@@ -137,7 +137,7 @@ They can be of one of the following core data datatypes: float32, float64, int8,
 
 More information on G3D is available on its Github repo at [https://github.com/vimaec/g3d](https://github.com/vimaec/g3d).
 
-## VIM Geometry Attributes
+### VIM Geometry Attributes
 The geometry in a VIM contains the following attributes:
 
 * `g3d:vertex:position:0:float32:3`
@@ -215,63 +215,69 @@ Conceptually, the geometric objects in a VIM file are related in the following m
   - References a slice of vertices in the shape vertex buffer to define the sequence of world-space vertices which compose its linear segments.
 
 ## Entities Buffer
-Columns and tables in the entity buffer should never be assumed to be present by an application consuming a VIM.
 
-The entities section of a VIM contains a collection of entity tables. An entity table is a combination of a relational table alongside a collection of key-value pairs about a particular data entity. Examples of data entities include geometry, nodes, materials, cameras, assets, and various BIM elements such as Elements or Products.
+The entities section of a VIM file contains a collection of entity tables which store a wide range of data, including the BIM parameters associated to the elements in the file.
 
-Each relational table consists of three types of columns:
-* **numerical** - in which each value is a numerical value of one of the following numerical types:
-  * `byte` (8-bit)
-  * `short` (16-bit)
-  * `int` (32-bit)
-  * `long` (64-bit)
-  * `float` (32-bit floating point)
-  * `double` (64-bit floating point)
-* **string** - in which each value is a 32-bit integer index into the string table, or a -1 to indicate no string
-* **relation** - in which each value is a 32-bit index into another entity table indicated by the column name, or a -1 to indicate no entity
-For more information on what the expected entities are and what columns they are expected to contain in this version of VIM, see the VIM Data Model Section of the documentation.
+This entities buffer is encoded as a BFAST, with each buffer containing an entity table. Each entity table is also encoded as a BFAST, with each column as a named buffer.
 
-The entities section is encoded as a BFAST, with each buffer containing an entity table. Each entity table is also encoded as a BFAST, with each column as a named buffer and a collection of key/value pairs encoded in its column.
+The "object model schema" refers to the schema of the entity tables. This constitutes the name of each table, the name and type of each column in each table, and the relationship between tables (as specified by index columns)
+
+The current object model schema [is documented here in JSON](./ObjectModel/object-model-schema.json):
+
+- The "Tables" object describes the entity table names and their contained columns.
+
+- Each column name is prefixed with the type of value it stores. Columns are classified in one of three ways:
+
+  - **Value** columns, which are prefixed with either:
+    - `byte:` for 8-bit values, typically used to contain booleans. For example, the column `byte:IsPinned` in the `Vim.Element` table contains boolean values which designate whether the Element on that row has been pinned (a concept in Revit).
+
+    - `int:` for 32-bit signed integer values. For example, the column `int:Id` in the `Vim.Element` table contains the identifier associated to each Element.
+
+    - `float:` for 32-bit single-precision floating point values. For example, the column `float:Location.X` in the `Vim.Element` table contains the X location coordinate of each Element. Compound types which would form a Vector3 are represented as multiple columns in the table (e.g., `float:Location.X`, `float:Location.Y`, and `float:Location.Z`).
+
+    - `double:` for 64-bit double-precision floating point values. For example, the column `double.Color.X` in the `Vim.Material` table contains the X color component, or the red channel, of each Material. Compound types which would form a Color are represented as multiple columns in the table (e.g. `double:Color.X`, `double:Color.Y`, `double:Color.Z`).
+
+  - **String** columns, which are prefixed with `string:` and contain signed 32-bit integer index values into the VIM file's string buffer (see below). For example, the column `string:Name` in the `Vim.Element` table contains the string index values representing each Element's name. The VIM file stores deduplicated strings in a common buffer to improve memory usage and to reduce its overall file size. If there is no string for a given row, an index value of `-1` is used.
+
+  - **Index** columns are prefixed with `index:(TABLE_NAME):` and describe a relation to a row in another table. For example, the column `index:Vim.BimDocument:BimDocument` in the `Vim.Element` table contains 32-bit signed integer values representing indexes into the `Vim.BimDocument` table. This index encodes the relation between an Element and its originating BimDocument. If there is no relation, an index value of `-1` is used.
+
+The evolution of the object model schema [is documented here in JSON](./ObjectModel/schema-diff.json).
+- This file summarizes the difference between schema versions using a flat representation of the entity table columns, prefixed by their entity table name, in the form: `(TABLE_NAME)__(COLUMN_NAME)`.
+- For example, in the schema update from v4.3.0 to v4.4.0, the entry `Vim.Element__byte:IsPinned` indicates that the entity table `Vim.Element` now contains the column `byte:IsPinned`.
 
 ## Strings Buffer
 The strings buffer contains a sequence of strings of zero or more length, with no duplicates, delimited by the "NUL" character. There may or may not be a trailing "NUL" character. The zero-based index of each string is used by the string columns of entity tables.
 
 # 2. VIM Version
-The VIM format version uses the [Semantic Versioning](https://semver.org/) scheme: `MAJOR.MINOR.PATCH`.
+
+The VIM format version is defined by the `vim` key in the VIM file header and designates the version of the format's data layout. This version number uses the [Semantic Versioning](https://semver.org/) scheme: `MAJOR.MINOR.PATCH`
 
 * A `MAJOR` number increment indicates a breaking change. Older VIM tools are not expected to be capable of loading VIM files whose `MAJOR` version has been incremented.
 
-* A `MINOR` number increment indicates a backwards-compatible change, for example: the addition of a new data field. Older VIM tools are expected to be capable of loading VIM files whose `MINOR` version has been incremented within the same `MAJOR` version.
+* A `MINOR` number increment indicates a backwards-compatible change, for example: the addition of a new top-level buffer. Older VIM tools are expected to be capable of loading VIM files whose `MINOR` version has been incremented within the same `MAJOR` version.
 
-* A `PATCH` number increment indicates a backwards-compatible change which does not affect the schema of the data, for example: a bug fix. Older VIM tools are expected to be capable of loading VIM files whose `PATCH` version has been incremented within the same `MAJOR` and `MINOR` version.
+* A `PATCH` number increment indicates a backwards-compatible change which does not affect the format's data layout, for example: a bug fix. Older VIM tools are expected to be capable of loading VIM files whose `PATCH` version has been incremented within the same `MAJOR` and `MINOR` version.
 
-Similarly, the object model has its own semantic versioning scheme.
+The object model schema version is defined by the `schema` key in the VIM file header and designates the version of the entity table layout. This version number also uses semantic versioning.
 
-# 3. VIM Object Model Schema
-The object model refers to the schema of entity tables. This constitutes the name of each table, the name and type of each column in each table, and the relationship between tables (as specified by index columns).
+# 3. Extending and Modifying VIM
 
-The VIM file format is independent of the object model.
-
-The current object model is documented here as a C# file: https://github.com/vimaec/vim/blob/master/object-model-schema.cs.
-
-The C# file describes the table as a set of objects. Compound types, for example, say a field named Location of type Vector3, is represented as multiple columns in the table (e.g., Location.X, Location.Y, and Location.Z).
-
-The VIM C# API allows users to efficiently access data as tables and columns (represented in memory and on disk) or, more conveniently, as dynamically created objects as expressed in the C# object model file.
-
-# 4. Extending and Modifying VIM
 The VIM format allows for additional geometry attribute buffers beyond the minimum required. Tools should be able to read and write additional buffers, even if there is no more profound understanding of the buffer.
 
 Software loading VIM files should be robust in the absence of tables and columns, never assuming any table or column is present.
 
 Additional tables and columns can be added as desired, and all software supporting VIM files should be able to read and write that data without loss.
 
-# 5. FAQ
-1. Why 64 Byte Alignment
-* Many Intel and AMD processors have 64-byte L1 cache lines. When data is aligned on cache lines, it can benefit performance.
-1. Why isn't a VIM compressed?
-* In HTTP server/client scenarios, the web client (e.g., a browser) will automatically decompress compressed content (e.g., using gzip) and serve with the appropriate content-encoding header. This decompression is optimized and happens in native code, and as a result is faster and simpler than requiring the client code to decompress content.
+# 4. FAQ
+
+1. Why 64 Byte Alignment?
+
+- Many Intel and AMD processors have 64-byte L1 cache lines. When data is aligned on cache lines, it can benefit performance.
+
+2. Why isn't a VIM compressed?
+
+- In HTTP server/client scenarios, the web client (e.g., a browser) will automatically decompress compressed content (e.g., using gzip) and serve with the appropriate content-encoding header. This decompression is optimized and happens in native code, and as a result is faster and simpler than requiring the client code to decompress content.
 
 # Copyright
 
 This documentation is [Copyright 2022 VIMaec LLC.](https://www.vimaec.com/copyright).
-
