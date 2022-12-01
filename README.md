@@ -228,7 +228,7 @@ The current object model schema [is documented here in JSON](./ObjectModel/objec
 
 - Each column name is prefixed with the type of value it stores. Columns are classified in one of three ways:
 
-  - **Value** columns, which are prefixed with either:
+  - **Data** columns, which are prefixed with either:
     - `byte:` for 8-bit values, typically used to contain booleans. For example, the column `byte:IsPinned` in the `Vim.Element` table contains boolean values which designate whether the Element on that row has been pinned (a concept in Revit).
 
     - `int:` for 32-bit signed integer values. For example, the column `int:Id` in the `Vim.Element` table contains the identifier associated to each Element.
