@@ -298,4 +298,4 @@ Additional tables and columns can be added as desired, and all software supporti
 
 # Copyright
 
-This documentation is [Copyright 2022 VIMaec LLC.](https://www.vimaec.com/copyright).
+This documentation is [Copyright 2023 VIMaec LLC.](https://www.vimaec.com/copyright).
