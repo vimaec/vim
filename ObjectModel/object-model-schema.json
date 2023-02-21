@@ -1,7 +1,19 @@
 {
   "VimFormatVersion": "1.0.0",
-  "SchemaVersion": "4.4.0",
+  "SchemaVersion": "4.5.0",
   "Tables": {
+    "Vim.Area": [
+      "byte:IsGrossInterior",
+      "double:Perimeter",
+      "double:Value",
+      "index:Vim.AreaScheme:AreaScheme",
+      "index:Vim.Element:Element",
+      "string:Number"
+    ],
+    "Vim.AreaScheme": [
+      "byte:IsGrossBuildingArea",
+      "index:Vim.Element:Element"
+    ],
     "Vim.AssemblyInstance": [
       "float:Position.X",
       "float:Position.Y",
@@ -195,6 +207,22 @@
       "int:FaceCount",
       "int:VertexCount"
     ],
+    "Vim.Grid": [
+      "byte:IsCurved",
+      "double:EndPoint.X",
+      "double:EndPoint.Y",
+      "double:EndPoint.Z",
+      "double:Extents.Max.X",
+      "double:Extents.Max.Y",
+      "double:Extents.Max.Z",
+      "double:Extents.Min.X",
+      "double:Extents.Min.Y",
+      "double:Extents.Min.Z",
+      "double:StartPoint.X",
+      "double:StartPoint.Y",
+      "double:StartPoint.Z",
+      "index:Vim.Element:Element"
+    ],
     "Vim.Group": [
       "float:Position.X",
       "float:Position.Y",
@@ -205,6 +233,16 @@
     "Vim.Level": [
       "double:Elevation",
       "index:Vim.Element:Element"
+    ],
+    "Vim.LevelInView": [
+      "double:Extents.Max.X",
+      "double:Extents.Max.Y",
+      "double:Extents.Max.Z",
+      "double:Extents.Min.X",
+      "double:Extents.Min.Y",
+      "double:Extents.Min.Z",
+      "index:Vim.Level:Level",
+      "index:Vim.View:View"
     ],
     "Vim.Material": [
       "double:Color.X",
@@ -256,6 +294,13 @@
     ],
     "Vim.Phase": [
       "index:Vim.Element:Element"
+    ],
+    "Vim.PhaseFilter": [
+      "index:Vim.Element:Element",
+      "int:Demolished",
+      "int:Existing",
+      "int:New",
+      "int:Temporary"
     ],
     "Vim.PhaseOrderInBimDocument": [
       "index:Vim.BimDocument:BimDocument",

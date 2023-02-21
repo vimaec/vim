@@ -50,5 +50,44 @@
       "Vim.Element__string:UniqueId",
       "Vim.Family__byte:IsInPlace"
     ]
+  },
+  "4.4.0 to 4.5.0": {
+    "Added": [
+      "Vim.Area__byte:IsGrossInterior",
+      "Vim.Area__double:Perimeter",
+      "Vim.Area__double:Value",
+      "Vim.Area__index:Vim.AreaScheme:AreaScheme",
+      "Vim.Area__index:Vim.Element:Element",
+      "Vim.Area__string:Number",
+      "Vim.AreaScheme__byte:IsGrossBuildingArea",
+      "Vim.AreaScheme__index:Vim.Element:Element",
+      "Vim.Grid__byte:IsCurved",
+      "Vim.Grid__double:EndPoint.X",
+      "Vim.Grid__double:EndPoint.Y",
+      "Vim.Grid__double:EndPoint.Z",
+      "Vim.Grid__double:Extents.Max.X",
+      "Vim.Grid__double:Extents.Max.Y",
+      "Vim.Grid__double:Extents.Max.Z",
+      "Vim.Grid__double:Extents.Min.X",
+      "Vim.Grid__double:Extents.Min.Y",
+      "Vim.Grid__double:Extents.Min.Z",
+      "Vim.Grid__double:StartPoint.X",
+      "Vim.Grid__double:StartPoint.Y",
+      "Vim.Grid__double:StartPoint.Z",
+      "Vim.Grid__index:Vim.Element:Element",
+      "Vim.LevelInView__double:Extents.Max.X",
+      "Vim.LevelInView__double:Extents.Max.Y",
+      "Vim.LevelInView__double:Extents.Max.Z",
+      "Vim.LevelInView__double:Extents.Min.X",
+      "Vim.LevelInView__double:Extents.Min.Y",
+      "Vim.LevelInView__double:Extents.Min.Z",
+      "Vim.LevelInView__index:Vim.Level:Level",
+      "Vim.LevelInView__index:Vim.View:View",
+      "Vim.PhaseFilter__index:Vim.Element:Element",
+      "Vim.PhaseFilter__int:Demolished",
+      "Vim.PhaseFilter__int:Existing",
+      "Vim.PhaseFilter__int:New",
+      "Vim.PhaseFilter__int:Temporary"
+    ]
   }
 }
