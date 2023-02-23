@@ -21,7 +21,6 @@ Unlike other 3D data formats, VIM is designed to carry substantial amounts of co
 * Unlike glTF and FBX, VIM is not designed to specify animated assets  
 -->
 
-
 # Sample Implementation
 A sample validating VIM reader can be found at: https://github.com/vimaec/vim/blob/master/VIMReference/Program.cs
 
@@ -30,7 +29,7 @@ A sample validating VIM reader can be found at: https://github.com/vimaec/vim/bl
 This is the specification for version 1.0.0 of the VIM data format. It is divided up into the following parts:
 1. VIM Format Binary Specification 
 2. VIM Versioning
-3. VIM Object Model Schema 
+3. VIM Object Model
 4. Extending VIM
 5. FAQ
 
@@ -110,7 +109,7 @@ The `created` field, should contain a date in ISO_8601 format.
 
 The `generator` field contains the name of the program used to generate or edit the VIM.
 
-The `schema` field contains the version of the object model schema.
+The `schema` field contains the version of the VIM Object Model.
 
 ## Assets Buffer
 The assets section of a BIM is also a BFAST container. It may contain any number of buffers with any names. Buffers prefixed with the name `texture/` are assumed to be texture files. By convention buffers prefixed with the name `render/` contain image files. The asset buffer `render/main.png` is used as the PNG thumbnail of the VIM file.
@@ -218,32 +217,36 @@ Conceptually, the geometric objects in a VIM file are related in the following m
 
 The entities section of a VIM file contains a collection of entity tables which store a wide range of data, including the BIM parameters associated to the elements in the file.
 
-This entities buffer is encoded as a BFAST, with each buffer containing an entity table. Each entity table is also encoded as a BFAST, with each column as a named buffer.
+This buffer is encoded as a BFAST, with each buffer containing an entity table. The columns of each entity table are encoded as BFAST buffers and contained within their parent entity table buffers.
 
-The "object model schema" refers to the schema of the entity tables. This constitutes the name of each table, the name and type of each column in each table, and the relationship between tables (as specified by index columns)
+The "VIM Object Model" refers to the schema of the entity tables. This constitutes the name of each table, the name and type of each column in each table, and the relationship between tables, as specified by index columns.
 
-The current object model schema [is documented here in JSON](./ObjectModel/object-model-schema.json):
+- [Conceptual Overview](./ObjectModel/VIM_Object_Model.md)
 
-- The "Tables" object describes the entity table names and their contained columns.
+- [Schema](./ObjectModel/object-model-schema.json)
 
-- Each column name is prefixed with the type of value it stores. Columns are classified in one of three ways:
+  - The "Tables" object describes the entity table names and their contained columns.
 
-  - **Data** columns, which are prefixed with either:
-    - `byte:` for 8-bit values, typically used to contain booleans. For example, the column `byte:IsPinned` in the `Vim.Element` table contains boolean values which designate whether the Element on that row has been pinned (a concept in Revit).
+  - Each column name is prefixed with the type of value it stores. Columns are classified in one of three ways:
 
-    - `int:` for 32-bit signed integer values. For example, the column `int:Id` in the `Vim.Element` table contains the identifier associated to each Element.
+    - **Data** columns, which are prefixed with either:
+      - `byte:` for 8-bit values, typically used to contain booleans. For example, the column `byte:IsPinned` in the `Vim.Element` table contains boolean values which designate whether the Element on that row has been pinned (a concept in Revit).
 
-    - `float:` for 32-bit single-precision floating point values. For example, the column `float:Location.X` in the `Vim.Element` table contains the X location coordinate of each Element. Compound types which would form a Vector3 are represented as multiple columns in the table (e.g., `float:Location.X`, `float:Location.Y`, and `float:Location.Z`).
+      - `int:` for 32-bit signed integer values. For example, the column `int:Id` in the `Vim.Element` table contains the identifier associated to each Element.
 
-    - `double:` for 64-bit double-precision floating point values. For example, the column `double.Color.X` in the `Vim.Material` table contains the X color component, or the red channel, of each Material. Compound types which would form a Color are represented as multiple columns in the table (e.g. `double:Color.X`, `double:Color.Y`, `double:Color.Z`).
+      - `float:` for 32-bit single-precision floating point values. For example, the column `float:Location.X` in the `Vim.Element` table contains the X location coordinate of each Element. Compound types which would form a Vector3 are represented as multiple columns in the table (e.g., `float:Location.X`, `float:Location.Y`, and `float:Location.Z`).
 
-  - **String** columns, which are prefixed with `string:` and contain signed 32-bit integer index values into the VIM file's string buffer (see below). For example, the column `string:Name` in the `Vim.Element` table contains the string index values representing each Element's name. The VIM file stores deduplicated strings in a common buffer to improve memory usage and to reduce its overall file size. If there is no string for a given row, an index value of `-1` is used.
+      - `double:` for 64-bit double-precision floating point values. For example, the column `double.Color.X` in the `Vim.Material` table contains the X color component, or the red channel, of each Material. Compound types which would form a Color are represented as multiple columns in the table (e.g. `double:Color.X`, `double:Color.Y`, `double:Color.Z`).
 
-  - **Index** columns are prefixed with `index:(TABLE_NAME):` and describe a relation to a row in another table. For example, the column `index:Vim.BimDocument:BimDocument` in the `Vim.Element` table contains 32-bit signed integer values representing indexes into the `Vim.BimDocument` table. This index encodes the relation between an Element and its originating BimDocument. If there is no relation, an index value of `-1` is used.
+    - **String** columns, which are prefixed with `string:` and contain signed 32-bit integer index values into the VIM file's string buffer (see below). For example, the column `string:Name` in the `Vim.Element` table contains the string index values representing each Element's name. The VIM file stores deduplicated strings in a common buffer to improve memory usage and to reduce its overall file size. If there is no string for a given row, an index value of `-1` is used.
 
-The evolution of the object model schema [is documented here in JSON](./ObjectModel/schema-diff.json).
-- This file summarizes the difference between schema versions using a flat representation of the entity table columns, prefixed by their entity table name, in the form: `(TABLE_NAME)__(COLUMN_NAME)`.
-- For example, in the schema update from v4.3.0 to v4.4.0, the entry `Vim.Element__byte:IsPinned` indicates that the entity table `Vim.Element` now contains the column `byte:IsPinned`.
+    - **Index** columns are prefixed with `index:(TABLE_NAME):` and describe a relation to a row in another table. For example, the column `index:Vim.BimDocument:BimDocument` in the `Vim.Element` table contains 32-bit signed integer values representing indexes into the `Vim.BimDocument` table. This index encodes the relation between an Element and its originating BimDocument. If there is no relation, an index value of `-1` is used.
+
+- [Schema Evolution](./ObjectModel/schema-diff.json)
+
+  - This file summarizes the difference between schema versions using a flat representation of the entity table columns, prefixed by their entity table name, in the form: `(TABLE_NAME)__(COLUMN_NAME)`.
+
+  - For example, in the schema update from v4.3.0 to v4.4.0, the entry `Vim.Element__byte:IsPinned` indicates that the entity table `Vim.Element` now contains the column `byte:IsPinned`.
 
 **Important invariant**: the number of rows in the following entity tables must be equal to the number of items items in their corresponding VIM geometry attributes to ensure referential integrity between rendered geometry and its associated entity table data.
 
@@ -276,7 +279,7 @@ The VIM format version is defined by the `vim` key in the VIM file header and de
 
 * A `PATCH` number increment indicates a backwards-compatible change which does not affect the format's data layout, for example: a bug fix. Older VIM tools are expected to be capable of loading VIM files whose `PATCH` version has been incremented within the same `MAJOR` and `MINOR` version.
 
-The object model schema version is defined by the `schema` key in the VIM file header and designates the version of the entity table layout. This version number also uses semantic versioning.
+The VIM Object Model version is defined by the `schema` key in the VIM file header and designates the version of the entity table layout. This version number also uses semantic versioning.
 
 # 3. Extending and Modifying VIM
 
