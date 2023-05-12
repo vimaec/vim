@@ -89,5 +89,20 @@
       "Vim.PhaseFilter__int:New",
       "Vim.PhaseFilter__int:Temporary"
     ]
+  },
+  "4.5.0 to 4.6.0": {
+    "Added": [
+      "Vim.Grid__index:Vim.FamilyType:FamilyType",
+      "Vim.Level__index:Vim.FamilyType:FamilyType",
+      "Vim.Schedule__index:Vim.Element:Element",
+      "Vim.ScheduleCell__index:Vim.ScheduleColumn:ScheduleColumn",
+      "Vim.ScheduleCell__int:RowIndex",
+      "Vim.ScheduleCell__string:Value",
+      "Vim.ScheduleColumn__index:Vim.Schedule:Schedule",
+      "Vim.ScheduleColumn__int:ColumnIndex",
+      "Vim.ScheduleColumn__string:Name",
+      "Vim.System__index:Vim.FamilyType:FamilyType",
+      "Vim.View__index:Vim.FamilyType:FamilyType"
+    ]
   }
 }
