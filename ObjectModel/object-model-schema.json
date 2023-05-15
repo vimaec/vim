@@ -1,6 +1,6 @@
 {
   "VimFormatVersion": "1.0.0",
-  "SchemaVersion": "4.5.0",
+  "SchemaVersion": "4.6.0",
   "Tables": {
     "Vim.Area": [
       "byte:IsGrossInterior",
@@ -221,7 +221,8 @@
       "double:StartPoint.X",
       "double:StartPoint.Y",
       "double:StartPoint.Z",
-      "index:Vim.Element:Element"
+      "index:Vim.Element:Element",
+      "index:Vim.FamilyType:FamilyType"
     ],
     "Vim.Group": [
       "float:Position.X",
@@ -232,7 +233,8 @@
     ],
     "Vim.Level": [
       "double:Elevation",
-      "index:Vim.Element:Element"
+      "index:Vim.Element:Element",
+      "index:Vim.FamilyType:FamilyType"
     ],
     "Vim.LevelInView": [
       "double:Extents.Max.X",
@@ -318,6 +320,19 @@
       "index:Vim.Level:UpperLimit",
       "string:Number"
     ],
+    "Vim.Schedule": [
+      "index:Vim.Element:Element"
+    ],
+    "Vim.ScheduleCell": [
+      "index:Vim.ScheduleColumn:ScheduleColumn",
+      "int:RowIndex",
+      "string:Value"
+    ],
+    "Vim.ScheduleColumn": [
+      "index:Vim.Schedule:Schedule",
+      "int:ColumnIndex",
+      "string:Name"
+    ],
     "Vim.Shape": [
       "index:Vim.Element:Element"
     ],
@@ -334,6 +349,7 @@
     ],
     "Vim.System": [
       "index:Vim.Element:Element",
+      "index:Vim.FamilyType:FamilyType",
       "int:SystemType"
     ],
     "Vim.View": [
@@ -359,6 +375,7 @@
       "double:ViewPosition.Z",
       "index:Vim.Camera:Camera",
       "index:Vim.Element:Element",
+      "index:Vim.FamilyType:FamilyType",
       "int:DetailLevel",
       "string:Title",
       "string:ViewType"
