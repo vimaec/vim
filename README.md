@@ -232,7 +232,9 @@ The "VIM Object Model" refers to the schema of the entity tables. This constitut
     - **Data** columns, which are prefixed with either:
       - `byte:` for 8-bit values, typically used to contain booleans. For example, the column `byte:IsPinned` in the `Vim.Element` table contains boolean values which designate whether the Element on that row has been pinned (a concept in Revit).
 
-      - `int:` for 32-bit signed integer values. For example, the column `int:Id` in the `Vim.Element` table contains the identifier associated to each Element.
+      - `int:` for 32-bit signed integer values. For example, the column `int:Id` in the `Vim.Workset` table contains the identifier associated to each Workset.
+
+      - `long:` for 64-bit signed integer values. For example, the column `long:Id` in the `Vim.Element` table contains the identifier associated to each Element.
 
       - `float:` for 32-bit single-precision floating point values. For example, the column `float:Location.X` in the `Vim.Element` table contains the X location coordinate of each Element. Compound types which would form a Vector3 are represented as multiple columns in the table (e.g., `float:Location.X`, `float:Location.Y`, and `float:Location.Z`).
 
