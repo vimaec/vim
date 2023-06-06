@@ -1,6 +1,6 @@
 {
   "VimFormatVersion": "1.0.0",
-  "SchemaVersion": "4.6.0",
+  "SchemaVersion": "5.0.0",
   "Tables": {
     "Vim.Area": [
       "byte:IsGrossInterior",
@@ -89,7 +89,7 @@
       "double:LineColor.Z",
       "index:Vim.Category:Parent",
       "index:Vim.Material:Material",
-      "int:Id",
+      "long:Id",
       "string:BuiltInCategory",
       "string:CategoryType",
       "string:Name"
@@ -134,7 +134,7 @@
       "index:Vim.Room:Room",
       "index:Vim.View:OwnerView",
       "index:Vim.Workset:Workset",
-      "int:Id",
+      "long:Id",
       "string:FamilyName",
       "string:Name",
       "string:Type",
