@@ -1,3 +1,5 @@
+**This repository has been archived; the code is now being maintained within the [vim-format](https://github.com/vimaec/vim-format) repository.**
+
 # VIM v1.0.0
 The VIM format is a modern and efficient open 3D data interchange format designed for BIM and manufacturing data optimized for efficient loading and rendering on low-power devices.
 
